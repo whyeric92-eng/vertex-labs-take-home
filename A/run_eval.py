@@ -1,7 +1,8 @@
 """Section A: run the extraction prompt on each test input 3 times,
 save every raw output, then check each run against the expected values.
 
-Run from the repo root: python A/run_eval.py
+Run from the repo root: python A/run_eval.py outputs_v2
+(the folder name is created under A/; the prompt used is copied into it).
 Needs GEMINI_API_KEY in .env. Standard library only.
 The prompt is read from A/prompt.md and the own test input from
 A/my_test_input.md, so the files submitted are exactly what was run.
@@ -18,7 +19,6 @@ from pathlib import Path
 MODEL = "gemini-2.5-flash"
 RUNS = 3
 HERE = Path(__file__).parent
-OUT = HERE / "outputs"
 
 
 def code_blocks(md_path):
@@ -83,12 +83,24 @@ def call_model(key, article):
             raise
 
 
+def is_bare_json(raw):
+    try:
+        json.loads(raw)
+        return True
+    except json.JSONDecodeError:
+        return False
+
+
+def strip_fences(raw):
+    return re.sub(r"^```[a-z]*\s*|\s*```$", "", raw.strip())
+
+
 def check(case, raw):
-    """Return a list of problems with one raw output (empty = all correct)."""
+    """Return a list of content problems with one output (empty = all correct)."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        return ["not valid JSON as returned"]
+        return ["not valid JSON"]
     if not isinstance(data, dict) or not isinstance(data.get("companies"), list):
         return ["not a JSON object with a companies list"]
     got = {c.get("name"): c for c in data["companies"] if isinstance(c, dict)}
@@ -114,18 +126,26 @@ def check(case, raw):
 
 
 def main():
+    if len(sys.argv) != 2:
+        sys.exit("usage: python A/run_eval.py <output folder name, e.g. outputs_v2>")
+    out = HERE / sys.argv[1]
+    if out.exists():
+        sys.exit(f"{out} already exists; pick a new name so earlier runs are kept")
     key = api_key()
-    OUT.mkdir(exist_ok=True)
-    report = [f"Model: {MODEL}, run {datetime.now():%Y-%m-%d %H:%M}\n"]
+    out.mkdir()
+    (out / "prompt_used.md").write_text((HERE / "prompt.md").read_text(encoding="utf-8"), encoding="utf-8")
+    report = [f"Model: {MODEL}, run {datetime.now():%Y-%m-%d %H:%M}",
+              "format = raw reply is bare JSON; content = fields checked after stripping code fences\n"]
     for case, article in INPUTS.items():
         for run in range(1, RUNS + 1):
             raw = call_model(key, article)
-            (OUT / f"{case}_run{run}.txt").write_text(raw, encoding="utf-8")
-            problems = check(case, raw)
-            line = f"{case} run {run}: " + ("OK" if not problems else "; ".join(problems))
+            (out / f"{case}_run{run}.txt").write_text(raw, encoding="utf-8")
+            fmt = "OK" if is_bare_json(raw) else "FAIL"
+            problems = check(case, strip_fences(raw))
+            line = f"{case} run {run}: format {fmt} | content " + ("OK" if not problems else "; ".join(problems))
             print(line)
             report.append(line)
-    (OUT / "check_report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
+    (out / "check_report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

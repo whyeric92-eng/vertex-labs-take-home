@@ -1,0 +1,14 @@
+Model: gemini-2.5-flash, run 2026-11-08 22:36
+
+snippet1 run 1: OK
+snippet1 run 2: not valid JSON as returned
+snippet1 run 3: OK
+snippet2 run 1: not valid JSON as returned
+snippet2 run 2: not valid JSON as returned
+snippet2 run 3: not valid JSON as returned
+snippet3 run 1: OK
+snippet3 run 2: not valid JSON as returned
+snippet3 run 3: not valid JSON as returned
+own_test run 1: not valid JSON as returned
+own_test run 2: not valid JSON as returned
+own_test run 3: not valid JSON as returned
