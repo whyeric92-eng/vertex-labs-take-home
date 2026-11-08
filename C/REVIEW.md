@@ -9,19 +9,22 @@
 5. Naive `today` or naive timestamps also crash.
 6. `startswith("Closed")` is case- and whitespace-sensitive.
 7. `test_mixed_offsets...` passes by luck: its string order matches its time order.
-8. `test_excludes_closed` and `test_no_shared_state` use the real clock; the latter tests nothing (no shared state exists).
+8. `test_no_shared_state` tests nothing and uses the real clock; `test_excludes_closed` also uses it (harmless).
 9. No tests for `None`, `Closed - Lost` or the 14-day boundary.
 
-## Decision: request changes
+`probe.py` reproduces problems 1–3, 5 and 6.
 
-Problem 1 crashes on data the spec says exists, so this cannot merge. Fixes 1–3 are small.
+## Decision: merge with changes
+
+Problem 1 crashes on real data. Fixes 1–3 are a few lines; merge once `test_review.py` passes.
 
 ## Added tests
 
-`test_review.py`: 4 fail on this PR, all pass once 1–3 are fixed.
+`test_review.py`: 4 fail on this PR, all pass once 1–3 are fixed. No tests for 5–6: the spec is unclear (see questions).
 
 ## Questions for the teammate
 
 - Is exactly 14 days stale?
 - Should never-contacted deals be listed first, or separately?
 - Naive timestamps: assume UTC, or reject?
+- Should stage matching ignore case and whitespace?
