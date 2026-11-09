@@ -4,7 +4,7 @@ Main tool: Claude Code. A second Claude Code session reviewed each section's wor
 
 ## A. Prompt and evaluate (~55 min)
 
-I asked Claude Code to draft the prompt, my test input and a script that scores every run; I chose the traps and the open-question calls. The review caught that "$ with no other currency named" could null CropIQ's $3M, plus checker bugs (lead order, crash on non-objects). I tested the checker on hand-made outputs first. v1 wrapped JSON in fences 9/12; I tightened the prompt; v2: 2/12.
+I asked Claude Code to draft the prompt, my test input and a script that scores every run; I chose the traps and the open-question calls. The review caught that "$ with no other currency named" could null CropIQ's $3M, plus checker bugs (lead order, crash on non-objects). Claude Code tested the checker on hand-made outputs first. v1 wrapped JSON in fences 9/12; I tightened the prompt; v2: 2/12.
 
 ## B. Messy data (~15 min)
 
@@ -12,4 +12,4 @@ I asked Claude Code to write the cleaning script and partner note; I decided to 
 
 ## C. Code review (~25 min)
 
-I read fix.py first and found the timezone crash; Claude Code wrote probe.py, the extra tests and a draft review. The draft said "request changes" (not one of the brief's options), overstated one test's real-clock issue and ran over 200 words; the review caught these. probe.py reproduces each bug; the new tests fail 4 / pass 2 on the PR and pass 10/10 on a local fix I didn't submit.
+I read fix.py first and found the timezone crash; Claude Code wrote probe.py, the extra tests and a draft review. The draft said "request changes" (not one of the brief's options), overstated one test's real-clock issue and ran over 200 words; the review caught these. probe.py reproduces each bug; the new tests fail 4 / pass 2 on the PR and pass 10/10 on a minimal fix Claude Code wrote to verify them (not submitted).
