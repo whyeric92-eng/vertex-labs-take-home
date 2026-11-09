@@ -126,20 +126,32 @@ def check(case, raw):
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: python A/run_eval.py <output folder name, e.g. outputs_v2>")
-    out = HERE / sys.argv[1]
-    if out.exists():
-        sys.exit(f"{out} already exists; pick a new name so earlier runs are kept")
+    args = [a for a in sys.argv[1:] if a != "--resume"]
+    resume = "--resume" in sys.argv
+    if len(args) != 1:
+        sys.exit("usage: python A/run_eval.py <output folder, e.g. outputs_v2> [--resume]")
+    out = HERE / args[0]
+    prompt_text = (HERE / "prompt.md").read_text(encoding="utf-8")
+    if out.exists() and not resume:
+        sys.exit(f"{out} already exists; pick a new name, or add --resume to fill in missing runs")
+    if resume:
+        # Only resume with the exact prompt the earlier runs used
+        if code_blocks(out / "prompt_used.md")[:2] != [SYSTEM, USER_TEMPLATE]:
+            sys.exit("prompt.md has changed since this folder was started; not resuming")
     key = api_key()
-    out.mkdir()
-    (out / "prompt_used.md").write_text((HERE / "prompt.md").read_text(encoding="utf-8"), encoding="utf-8")
+    out.mkdir(exist_ok=resume)
+    if not resume:
+        (out / "prompt_used.md").write_text(prompt_text, encoding="utf-8")
     report = [f"Model: {MODEL}, run {datetime.now():%Y-%m-%d %H:%M}",
               "format = raw reply is bare JSON; content = fields checked after stripping code fences\n"]
     for case, article in INPUTS.items():
         for run in range(1, RUNS + 1):
-            raw = call_model(key, article)
-            (out / f"{case}_run{run}.txt").write_text(raw, encoding="utf-8")
+            path = out / f"{case}_run{run}.txt"
+            if path.exists() and path.stat().st_size > 0:
+                raw = path.read_text(encoding="utf-8")  # from an earlier, interrupted run
+            else:
+                raw = call_model(key, article)
+                path.write_text(raw, encoding="utf-8")
             fmt = "OK" if is_bare_json(raw) else "FAIL"
             problems = check(case, strip_fences(raw))
             line = f"{case} run {run}: format {fmt} | content " + ("OK" if not problems else "; ".join(problems))

@@ -1,0 +1,15 @@
+Model: gemini-2.5-flash. snippet runs 2026-11-08 22:48; own_test runs 2026-11-09 17:24 (resumed after free-tier daily limit)
+format = raw reply is bare JSON; content = fields checked after stripping code fences
+
+snippet1 run 1: format OK | content OK
+snippet1 run 2: format OK | content OK
+snippet1 run 3: format FAIL | content OK
+snippet2 run 1: format OK | content OK
+snippet2 run 2: format OK | content OK
+snippet2 run 3: format OK | content OK
+snippet3 run 1: format OK | content OK
+snippet3 run 2: format OK | content OK
+snippet3 run 3: format FAIL | content OK
+own_test run 1: format OK | content OK
+own_test run 2: format OK | content OK
+own_test run 3: format OK | content OK
