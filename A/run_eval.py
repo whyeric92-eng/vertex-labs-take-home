@@ -56,7 +56,10 @@ EXPECTED = {
 
 
 def api_key():
-    for line in (HERE.parent / ".env").read_text(encoding="utf-8").splitlines():
+    env = HERE.parent / ".env"
+    if not env.exists():
+        sys.exit("No .env file: create one in the repo root containing GEMINI_API_KEY=your-key")
+    for line in env.read_text(encoding="utf-8").splitlines():
         if line.startswith("GEMINI_API_KEY=") and line.split("=", 1)[1].strip():
             return line.split("=", 1)[1].strip()
     sys.exit("GEMINI_API_KEY missing in .env")
